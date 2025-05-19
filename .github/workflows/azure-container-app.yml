@@ -42,4 +42,4 @@ jobs:
         appSourcePath: .
         resourceGroup: news-headlines-rg
         containerAppName: vorai-news-agent
-        imageToDeploy: voraiacr.azurecr.io/vorai-news-backend:latest
+        acrName: voraiacr
