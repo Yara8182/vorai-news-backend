@@ -16,13 +16,25 @@ jobs:
     - name: Azure Login
       uses: azure/login@v1
       with:
-        client-id: ${{ secrets.VORAINWSAGENT_AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.VORAINWSAGENT_AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.VORAINWSAGENT_AZURE_SUBSCRIPTION_ID }}
+        client-id: ${{ secrets.VORAI_AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.VORAI_AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.VORAI_AZURE_SUBSCRIPTION_ID }}
+
+    - name: Docker login to Azure Container Registry
+      uses: azure/docker-login@v1
+      with:
+        login-server: voraiacr.azurecr.io
+        username: ${{ secrets.VORAI_REGISTRY_USERNAME }}
+        password: ${{ secrets.VORAI_REGISTRY_PASSWORD }}
+
+    - name: Build and Push image to ACR
+      run: |
+        docker build . -t voraiacr.azurecr.io/vorai-news-backend:latest
+        docker push voraiacr.azurecr.io/vorai-news-backend:latest
 
     - name: Deploy to Azure Container App
       uses: azure/container-apps-deploy-action@v1
       with:
-        appSourcePath: .
         resourceGroup: news-headlines-rg
         containerAppName: vorai-news-agent
+        imageToDeploy: voraiacr.azurecr.io/vorai-news-backend:latest
