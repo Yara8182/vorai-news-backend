@@ -6,28 +6,23 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Checkout source code
+    - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Log in to GitHub Container Registry
-      uses: docker/login-action@v2
+    - name: Azure Login
+      uses: azure/login@v1
       with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GHCR_PAT }} 
+        client-id: ${{ secrets.VORAINWSAGENT_AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.VORAINWSAGENT_AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.VORAINWSAGENT_AZURE_SUBSCRIPTION_ID }}
 
-
-    - name: Build and push Docker image
-      run: |
-        docker build -t ghcr.io/${{ github.repository }}:${{ github.sha }} .
-        docker push ghcr.io/${{ github.repository }}:${{ github.sha }}
-
-    - name: Deploy to Azure Container Apps
+    - name: Deploy to Azure Container App
       uses: azure/container-apps-deploy-action@v1
       with:
+        appSourcePath: .
         resourceGroup: news-headlines-rg
         containerAppName: vorai-news-agent
-        imageToDeploy: ghcr.io/${{ github.repository }}:${{ github.sha }}
